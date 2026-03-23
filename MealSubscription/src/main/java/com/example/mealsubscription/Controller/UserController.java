@@ -7,29 +7,28 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/user")
 public class UserController {
+    private final UserService userService;
 
-    private final UserService service;
-
-    public UserController(UserService service) {
-        this.service = service;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @PostMapping
-    public ResponseEntity<User> addUser(@RequestBody User user){
+    public ResponseEntity<User> addUser(@RequestBody User user) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(service.addUser(user));
+                .body(userService.addUser(user));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@RequestBody User user,@PathVariable long id){
-        return ResponseEntity.ok(service.updateUser(user,id));
+    public ResponseEntity<User> updateUser(@RequestBody User user, @PathVariable long id) {
+        return ResponseEntity.ok(userService.updateUser(user, id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable long id){
-        service.deleteUser(id);
-        return ResponseEntity.ok("user with id:"+id+" deleted");
+    public ResponseEntity<Void> deleteUser(@PathVariable long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 }

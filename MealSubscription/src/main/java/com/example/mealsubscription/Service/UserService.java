@@ -13,19 +13,21 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User addUser(User user){
+    public User addUser(User user) {
         return userRepository.save(user);
     }
 
-    public User updateUser(User user,long id){
-        User updatedUser=userRepository.findById(id).orElseThrow(()->new UserNotFoundException("user with Id:"+id+" not found"));
-        if(user.getName()!=null) updatedUser.setName(user.getName());
-        if(user.getEmail()!=null) updatedUser.setEmail(user.getEmail());
+    public User updateUser(User user, long id) {
+        User updatedUser = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("user with Id:" + id + " not found"));
+        if (user.getName() != null) updatedUser.setName(user.getName());
+        if (user.getEmail() != null) updatedUser.setEmail(user.getEmail());
         return userRepository.save(updatedUser);
     }
 
-    public void deleteUser(long id){
-        User user=userRepository.findById(id).orElseThrow(()->new UserNotFoundException("user with Id:"+id+" not found"));
+    public void deleteUser(long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("user with Id:" + id + " not found"));
         userRepository.delete(user);
     }
 }

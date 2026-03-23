@@ -19,14 +19,29 @@ public class SubscriptionController {
     }
 
     @PostMapping
-    public ResponseEntity<?> addSubscription(@RequestBody SubscriptionRequest request){
-      subscriptionService.addSubscription(request);
-      return ResponseEntity.status(HttpStatus.CREATED)
-              .body("Added new subscription for user :"+request.getUserId()+ "for :"+ request.getMealSlots());
+    public ResponseEntity<?> addSubscription(@RequestBody SubscriptionRequest request) {
+        subscriptionService.addSubscription(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body("Added new subscription for user: " + request.getUserId());
     }
 
     @GetMapping
-    public List<Subscription> getAllSubscription(){
-      return subscriptionService.getAllSubscription();
+    public List<Subscription> getAllSubscriptions() {
+        return subscriptionService.getAllSubscriptions();
+    }
+
+    @PutMapping("/{id}/pause")
+    public ResponseEntity<Subscription> pauseSubscription(@PathVariable Long id) {
+        return ResponseEntity.ok(subscriptionService.pauseSubscription(id));
+    }
+
+    @PutMapping("/{id}/resume")
+    public ResponseEntity<Subscription> resumeSubscription(@PathVariable Long id) {
+        return ResponseEntity.ok(subscriptionService.resumeSubscription(id));
+    }
+
+    @PutMapping("/{id}/expire")
+    public ResponseEntity<Subscription> expireSubscription(@PathVariable Long id) {
+        return ResponseEntity.ok(subscriptionService.expireSubscription(id));
     }
 }
