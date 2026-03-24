@@ -14,6 +14,7 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
     private Map<String, Object> buildError(HttpStatus status, String message, WebRequest request) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
@@ -25,17 +26,23 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handelUserNotFoundException(
+    public ResponseEntity<Map<String, Object>> handleUserNotFoundException(
             UserNotFoundException exception, WebRequest request) {
-        return new ResponseEntity<>(buildError(HttpStatus.NOT_FOUND,
-                exception.getMessage(), request), HttpStatus.NOT_FOUND);
+
+        return new ResponseEntity<>(
+                buildError(HttpStatus.NOT_FOUND, exception.getMessage(), request),
+                HttpStatus.NOT_FOUND
+        );
     }
 
     @ExceptionHandler(SubscriptionAlreadyExists.class)
-    public ResponseEntity<Map<String, Object>> handelSubscriptionAlreadyExists(SubscriptionAlreadyExists exception,
-                                                                               WebRequest request){
-        return new ResponseEntity<>(buildError(HttpStatus.BAD_REQUEST,
-                exception.getMessage(), request), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<Map<String, Object>> handleSubscriptionAlreadyExists(
+            SubscriptionAlreadyExists exception, WebRequest request) {
 
+        return new ResponseEntity<>(
+                buildError(HttpStatus.BAD_REQUEST, exception.getMessage(), request),
+                HttpStatus.BAD_REQUEST
+        );
     }
+
 }

@@ -6,7 +6,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "delivery")
+@Table(name = "delivery", uniqueConstraints = { @UniqueConstraint(name = "uq_subscription_scheduled_time",
+        columnNames = {"subscription_id", "scheduledDeliveryTime"})})
 public class Delivery {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
