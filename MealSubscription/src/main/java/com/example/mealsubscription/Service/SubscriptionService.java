@@ -4,6 +4,7 @@ import com.example.mealsubscription.DTO.SubscriptionRequest;
 import com.example.mealsubscription.Entity.Subscription;
 import com.example.mealsubscription.Entity.User;
 import com.example.mealsubscription.Enum.MealSlot;
+import com.example.mealsubscription.Enum.ScheduleType;
 import com.example.mealsubscription.Enum.Status;
 import com.example.mealsubscription.Exceptions.SubscriptionAlreadyExists;
 import com.example.mealsubscription.Exceptions.UserNotFoundException;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @Service
 public class SubscriptionService {
+
     private final SubscriptionRepository subscriptionRepository;
     private final UserRepository userRepository;
     private final DeliveryTimeService deliveryTimeService;
@@ -28,26 +30,51 @@ public class SubscriptionService {
     }
 
     public void addSubscription(SubscriptionRequest request) {
+
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new UserNotFoundException("user with ID:" + request.getUserId() + " not found"));
+                .orElseThrow(() ->
+                        new UserNotFoundException("User with ID: " + request.getUserId() + " not found"));
+
+        if (request.getMealSlots() == null || request.getMealSlots().isEmpty()) {
+            throw new IllegalArgumentException("Meal slots cannot be null or empty");
+        }
+
+
+        if (request.getScheduleType() == ScheduleType.DAILY) {
+            request.setDayOfWeek(null); // must be null
+        }
+        else if (request.getScheduleType() == ScheduleType.WEEKLY) {
+
+            if (request.getDayOfWeek() == null) {
+                throw new IllegalArgumentException("DayOfWeek required for WEEKLY schedule");
+            }
+        }
 
         for (MealSlot slot : request.getMealSlots()) {
-            Subscription subscription = new Subscription();
-            if(subscriptionRepository.checkSubscriptionExists(request.getUserId(),
+
+
+            if (subscriptionRepository.checkSubscriptionExists(
+                    request.getUserId(),
                     slot.name(),
-                    Status.ACTIVE.name())>0){
-                throw new SubscriptionAlreadyExists("Subscrition already exists for user :"
-                        +request.getUserId()+" with slot "+
-                        slot.name());
+                    Status.ACTIVE.name()) > 0) {
+
+                throw new SubscriptionAlreadyExists(
+                        "Subscription already exists for user: "
+                                + request.getUserId() + " with slot " + slot.name());
             }
+
+            Subscription subscription = new Subscription();
+            subscription.setUser(user);
             subscription.setSlot(slot);
             subscription.setScheduleType(request.getScheduleType());
-            if (request.getDayOfWeek() != null) {
-                subscription.setDayOfWeek(request.getDayOfWeek());
-            }
+            subscription.setDayOfWeek(request.getDayOfWeek());
             subscription.setStatus(Status.ACTIVE);
-            subscription.setNextDeliveryTime(deliveryTimeService.calculateNextDelivery(request, slot));
-            subscription.setUser(user);
+
+
+            subscription.setNextDeliveryTime(
+                    deliveryTimeService.calculateNextDelivery(request, slot)
+            );
+
             subscriptionRepository.save(subscription);
         }
     }
@@ -59,37 +86,63 @@ public class SubscriptionService {
     public Subscription pauseSubscription(Long subscriptionId) {
         Subscription subscription = subscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> new RuntimeException("Subscription not found"));
+
         subscription.setStatus(Status.PAUSED);
         subscription.setNextDeliveryTime(null);
+
         return subscriptionRepository.save(subscription);
     }
 
     public Subscription resumeSubscription(Long subscriptionId) {
         Subscription subscription = subscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> new RuntimeException("Subscription not found"));
+
         subscription.setStatus(Status.ACTIVE);
-        subscription.setNextDeliveryTime(deliveryTimeService.getNextDeliveryTime(subscription));
+
+        subscription.setNextDeliveryTime(
+                deliveryTimeService.getNextDeliveryTime(subscription)
+        );
+
         return subscriptionRepository.save(subscription);
     }
 
     public Subscription expireSubscription(Long subscriptionId) {
         Subscription subscription = subscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> new RuntimeException("Subscription not found"));
+
         subscription.setStatus(Status.EXPIRED);
         subscription.setNextDeliveryTime(null);
+
         return subscriptionRepository.save(subscription);
     }
 
     public Subscription updateSubscription(Long subscriptionId, SubscriptionRequest request) {
+
         Subscription subscription = subscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> new RuntimeException("Subscription not found"));
 
-        subscription.setScheduleType(request.getScheduleType());
-        if (request.getDayOfWeek() != null) {
+
+        if (request.getScheduleType() == ScheduleType.DAILY) {
+            subscription.setDayOfWeek(null);
+        }
+        else if (request.getScheduleType() == ScheduleType.WEEKLY) {
+
+            if (request.getDayOfWeek() == null) {
+                throw new IllegalArgumentException("DayOfWeek required");
+            }
+
             subscription.setDayOfWeek(request.getDayOfWeek());
         }
-        subscription.setSlot(request.getMealSlots().get(0)); // Update slot
-        subscription.setNextDeliveryTime(deliveryTimeService.calculateNextDelivery(request, subscription.getSlot()));
+
+        subscription.setScheduleType(request.getScheduleType());
+
+        if (request.getMealSlots() != null && !request.getMealSlots().isEmpty()) {
+            subscription.setSlot(request.getMealSlots().get(0));
+        }
+
+        subscription.setNextDeliveryTime(
+                deliveryTimeService.calculateNextDelivery(request, subscription.getSlot())
+        );
 
         return subscriptionRepository.save(subscription);
     }

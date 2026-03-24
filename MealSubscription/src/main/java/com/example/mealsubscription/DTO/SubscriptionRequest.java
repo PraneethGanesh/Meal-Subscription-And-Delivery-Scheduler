@@ -2,6 +2,8 @@ package com.example.mealsubscription.DTO;
 
 import com.example.mealsubscription.Enum.MealSlot;
 import com.example.mealsubscription.Enum.ScheduleType;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.DayOfWeek;
 import java.util.List;
@@ -10,6 +12,8 @@ public class SubscriptionRequest {
     private long userId;
     private ScheduleType scheduleType;
     private DayOfWeek dayOfWeek;
+    @NotNull
+    @NotEmpty
     private List<MealSlot> mealSlots;
 
     public long getUserId() {
