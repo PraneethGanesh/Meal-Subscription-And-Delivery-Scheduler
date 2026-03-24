@@ -32,7 +32,7 @@ public class DeliveryService {
 
         // Find all active subscriptions with due deliveries
         List<Subscription> dueSubscriptions = subscriptionRepository
-                .findByStatusAndNextDeliveryTimeBefore(Status.ACTIVE, now);
+                .findDueSubscriptions(Status.ACTIVE.name());
 
         for (Subscription subscription : dueSubscriptions) {
             // Create delivery record

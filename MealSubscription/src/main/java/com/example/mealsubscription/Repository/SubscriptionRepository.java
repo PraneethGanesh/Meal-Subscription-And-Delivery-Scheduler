@@ -10,8 +10,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
-    List<Subscription> findByStatusAndNextDeliveryTimeBefore(Status status, LocalDateTime time);
-
+    @Query(value = "SELECT * FROM subscription s WHERE s.status = :status " +
+            "AND :currentTime >= s.next_delivery_time",nativeQuery = true)
+    List<Subscription> findDueSubscriptions(@Param("status") String status);
     @Query(value = "select count(*) from subscription s where s.user_id=:userId and s.slot=:slot and s.status=:status",nativeQuery = true)
     int checkSubscriptionExists(
             @Param("userId") long userId,
