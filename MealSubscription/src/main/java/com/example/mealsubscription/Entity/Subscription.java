@@ -6,8 +6,7 @@ import com.example.mealsubscription.Enum.Status;
 import jakarta.persistence.*;
 
 import java.time.DayOfWeek;
-import java.time.LocalDateTime;
-
+import java.time.*;
 @Entity
 public class Subscription {
     @Id
@@ -19,8 +18,8 @@ public class Subscription {
     private DayOfWeek dayOfWeek;
     @Enumerated(EnumType.STRING)
     private Status status;
-    private LocalDateTime nextDeliveryTime;
-    private LocalDateTime created_at;
+    private Instant nextDeliveryTime;
+    private Instant created_at;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -65,21 +64,21 @@ public class Subscription {
         this.status = status;
     }
 
-    public LocalDateTime getNextDeliveryTime() {
+    public Instant getNextDeliveryTime() {
         return nextDeliveryTime;
     }
 
-    public void setNextDeliveryTime(LocalDateTime nextDeliveryTime) {
+    public void setNextDeliveryTime(Instant nextDeliveryTime) {
         this.nextDeliveryTime = nextDeliveryTime;
     }
 
-    public LocalDateTime getCreated_at() {
+    public Instant getCreated_at() {
         return created_at;
     }
 
     @PrePersist
     public void setCreated_at() {
-        this.created_at = LocalDateTime.now();
+        this.created_at = Instant.now();
     }
 
     public User getUser() {

@@ -3,7 +3,7 @@ package com.example.mealsubscription.Entity;
 import com.example.mealsubscription.Enum.DeliveryStatus;
 import com.example.mealsubscription.Enum.MealSlot;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.time.*;
 
 @Entity
 @Table(name = "delivery", uniqueConstraints = { @UniqueConstraint(name = "uq_subscription_scheduled_time",
@@ -18,17 +18,17 @@ public class Delivery {
     private Subscription subscription;
 
     private MealSlot mealSlot;
-    private LocalDateTime scheduledDeliveryTime;
-    private LocalDateTime actualDeliveryTime;
+    private Instant scheduledDeliveryTime;
+    private Instant actualDeliveryTime;
 
     @Enumerated(EnumType.STRING)
     private DeliveryStatus status;
 
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @PrePersist
     public void prePersist() {
-        createdAt = LocalDateTime.now();
+        createdAt = Instant.now();
         if (status == null) {
             status = DeliveryStatus.SCHEDULED;
         }
@@ -44,15 +44,15 @@ public class Delivery {
     public MealSlot getMealSlot() { return mealSlot; }
     public void setMealSlot(MealSlot mealSlot) { this.mealSlot = mealSlot; }
 
-    public LocalDateTime getScheduledDeliveryTime() { return scheduledDeliveryTime; }
-    public void setScheduledDeliveryTime(LocalDateTime scheduledDeliveryTime) { this.scheduledDeliveryTime = scheduledDeliveryTime; }
+    public Instant getScheduledDeliveryTime() { return scheduledDeliveryTime; }
+    public void setScheduledDeliveryTime(Instant scheduledDeliveryTime) { this.scheduledDeliveryTime = scheduledDeliveryTime; }
 
-    public LocalDateTime getActualDeliveryTime() { return actualDeliveryTime; }
-    public void setActualDeliveryTime(LocalDateTime actualDeliveryTime) { this.actualDeliveryTime = actualDeliveryTime; }
+    public Instant getActualDeliveryTime() { return actualDeliveryTime; }
+    public void setActualDeliveryTime(Instant actualDeliveryTime) { this.actualDeliveryTime = actualDeliveryTime; }
 
     public DeliveryStatus getStatus() { return status; }
     public void setStatus(DeliveryStatus status) { this.status = status; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 }

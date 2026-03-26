@@ -2,7 +2,7 @@ package com.example.mealsubscription.Entity;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
+import java.time.*;
 
 @Entity
 public class User {
@@ -11,7 +11,8 @@ public class User {
     private long userId;
     private String name;
     private String email;
-    private LocalDateTime created_at;
+    private Instant createdAt;
+    private String timezone;
 
 
 
@@ -39,12 +40,19 @@ public class User {
         this.email = email;
     }
 
-    public LocalDateTime getCreated_at() {
-        return created_at;
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 
+    public String getTimezone() {
+        return timezone;
+    }
     @PrePersist
-    public void setCreated_at() {
-        this.created_at = LocalDateTime.now();
+    public void setCreatedAt() {
+        this.createdAt = Instant.now();
+    }
+
+    public void setTimezone(String timezone) {
+        this.timezone = timezone;
     }
 }
