@@ -1,5 +1,6 @@
 package com.example.mealsubscription.Service;
 
+import com.example.mealsubscription.DTO.SubscriptionDTO;
 import com.example.mealsubscription.DTO.SubscriptionRequest;
 import com.example.mealsubscription.Entity.Subscription;
 import com.example.mealsubscription.Entity.User;
@@ -12,6 +13,9 @@ import com.example.mealsubscription.Repository.SubscriptionRepository;
 import com.example.mealsubscription.Repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -72,15 +76,39 @@ public class SubscriptionService {
 
 
             subscription.setNextDeliveryTime(
-                    deliveryTimeService.calculateNextDelivery(request, slot)
+                    deliveryTimeService.calculateNextDelivery(request, slot,user)
             );
 
             subscriptionRepository.save(subscription);
         }
     }
 
-    public List<Subscription> getAllSubscriptions() {
-        return subscriptionRepository.findAll();
+    public List<SubscriptionDTO> getAllSubscriptions() {
+        List<Subscription> subscriptions=subscriptionRepository.findAll();
+        List<SubscriptionDTO> subscriptionDTOList=new ArrayList<>();
+        for (Subscription subscription:subscriptions){
+            SubscriptionDTO dto=convertToDTO(subscription);
+            subscriptionDTOList.add(dto);
+        }
+        return subscriptionDTOList;
+    }
+
+    private SubscriptionDTO convertToDTO(Subscription subscription){
+        SubscriptionDTO subscriptionDTO=new SubscriptionDTO();
+        subscriptionDTO.setSubscriptionId(subscription.getId());
+        subscriptionDTO.setUserId(subscription.getUser().getUserId());
+        subscriptionDTO.setMealSlot(subscription.getSlot());
+        subscriptionDTO.setScheduleType(subscription.getScheduleType());
+        if(subscription.getScheduleType()==ScheduleType.WEEKLY){
+            subscriptionDTO.setDayOfWeek(subscription.getDayOfWeek());
+        }
+        subscriptionDTO.setStatus(subscription.getStatus());
+        if(subscription.getNextDeliveryTime()!=null){
+            ZoneId userZone=ZoneId.of(subscription.getUser().getTimezone());
+            ZonedDateTime zonedDateTime=subscription.getNextDeliveryTime().atZone(userZone);
+            subscriptionDTO.setNextDeliveryTime(zonedDateTime);
+        }
+        return subscriptionDTO;
     }
 
     public Subscription pauseSubscription(Long subscriptionId) {
@@ -120,6 +148,7 @@ public class SubscriptionService {
 
         Subscription subscription = subscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> new RuntimeException("Subscription not found"));
+        User user=subscription.getUser();
 
 
         if (request.getScheduleType() == ScheduleType.DAILY) {
@@ -141,7 +170,7 @@ public class SubscriptionService {
         }
 
         subscription.setNextDeliveryTime(
-                deliveryTimeService.calculateNextDelivery(request, subscription.getSlot())
+                deliveryTimeService.calculateNextDelivery(request, subscription.getSlot(),user)
         );
 
         return subscriptionRepository.save(subscription);

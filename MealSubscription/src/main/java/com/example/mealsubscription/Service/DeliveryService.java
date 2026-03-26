@@ -12,6 +12,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -46,14 +47,14 @@ public class DeliveryService {
                 delivery.setStatus(DeliveryStatus.IN_PROGRESS);
                 deliveryRepository.save(delivery);
 
-                LocalDateTime nextDelivery = deliveryTimeService.getNextDeliveryTime(subscription);
+                Instant nextDelivery = deliveryTimeService.getNextDeliveryTime(subscription);
                 subscription.setNextDeliveryTime(nextDelivery);
                 subscriptionRepository.save(subscription);
 
             } catch (DataIntegrityViolationException e) {
                 // Duplicate delivery already exists — just advance the next delivery time
                 logger.warn("Duplicate delivery skipped for subscription ID: {}", subscription.getId());
-                LocalDateTime nextDelivery = deliveryTimeService.getNextDeliveryTime(subscription);
+                Instant nextDelivery = deliveryTimeService.getNextDeliveryTime(subscription);
                 subscription.setNextDeliveryTime(nextDelivery);
                 subscriptionRepository.save(subscription);
             }
@@ -67,7 +68,7 @@ public class DeliveryService {
 
         delivery.setStatus(status);
         if (status == DeliveryStatus.DELIVERED) {
-            delivery.setActualDeliveryTime(LocalDateTime.now());
+            delivery.setActualDeliveryTime(Instant.now());
         }
 
         return deliveryRepository.save(delivery);

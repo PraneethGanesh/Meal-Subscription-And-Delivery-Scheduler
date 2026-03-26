@@ -3,13 +3,12 @@ package com.example.mealsubscription.Service;
 import com.example.mealsubscription.Config.MealSlotService;
 import com.example.mealsubscription.DTO.SubscriptionRequest;
 import com.example.mealsubscription.Entity.Subscription;
+import com.example.mealsubscription.Entity.User;
 import com.example.mealsubscription.Enum.MealSlot;
 import com.example.mealsubscription.Enum.ScheduleType;
 import org.springframework.stereotype.Service;
 
-import java.time.DayOfWeek;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 
 @Service
 public class DeliveryTimeService {
@@ -19,39 +18,41 @@ public class DeliveryTimeService {
         this.mealSlotService = mealSlotService;
     }
 
-    public LocalDateTime calculateNextDelivery(SubscriptionRequest request, MealSlot slot) {
+    public Instant calculateNextDelivery(SubscriptionRequest request, MealSlot slot, User user) {
+        ZoneId userZone=ZoneId.of(user.getTimezone());
         if (request.getScheduleType() == ScheduleType.DAILY) {
-            return calculateDailyNextDelivery(slot);
+            return calculateDailyNextDelivery(slot,userZone);
         } else {
-            return calculateWeeklyNextDelivery(slot, request.getDayOfWeek());
+            return calculateWeeklyNextDelivery(slot, request.getDayOfWeek(),userZone);
         }
     }
 
-    private LocalDateTime calculateDailyNextDelivery(MealSlot slot) {
+    private Instant calculateDailyNextDelivery(MealSlot slot, ZoneId userZone) {
         LocalTime slotTime = mealSlotService.getTime(slot);
-        LocalDateTime currentDateTime = LocalDateTime.now();
-        LocalTime currentTime = currentDateTime.toLocalTime();
+        ZonedDateTime now = ZonedDateTime.now(userZone);
+        ZonedDateTime deliveryTime;
 
-        if (currentTime.isBefore(slotTime)) {
-            return LocalDateTime.of(currentDateTime.toLocalDate(), slotTime);
+        if (now.toLocalTime().isBefore(slotTime)) {
+            deliveryTime=ZonedDateTime.of(now.toLocalDate(),slotTime,userZone);
         } else {
-            return LocalDateTime.of(currentDateTime.toLocalDate().plusDays(1), slotTime);
+            deliveryTime=ZonedDateTime.of(now.toLocalDate().plusDays(1), slotTime,userZone);
         }
+        return deliveryTime.toInstant();
     }
 
-    private LocalDateTime calculateWeeklyNextDelivery(MealSlot slot, DayOfWeek dayOfWeek) {
+    private Instant calculateWeeklyNextDelivery(MealSlot slot, DayOfWeek dayOfWeek,ZoneId userZone) {
         LocalTime slotTime = mealSlotService.getTime(slot);
-        LocalDateTime currentDateTime = LocalDateTime.now();
-        LocalTime currentTime = currentDateTime.toLocalTime();
-        DayOfWeek today = currentDateTime.getDayOfWeek();
+        ZonedDateTime now=ZonedDateTime.now(userZone);
+        DayOfWeek today = now.getDayOfWeek();
+
 
         int daysToAdd = dayOfWeek.getValue() - today.getValue();
 
         if (daysToAdd == 0) {
-            if (currentTime.isBefore(slotTime)) {
-                return LocalDateTime.of(currentDateTime.toLocalDate(), slotTime);
+            if (now.toLocalTime().isBefore(slotTime)) {
+                return ZonedDateTime.of(now.toLocalDate(), slotTime,userZone).toInstant();
             } else {
-                return LocalDateTime.of(currentDateTime.toLocalDate().plusDays(7), slotTime);
+                return ZonedDateTime.of(now.toLocalDate().plusDays(7), slotTime,userZone).toInstant();
             }
         }
 
@@ -59,15 +60,18 @@ public class DeliveryTimeService {
             daysToAdd += 7;
         }
 
-        LocalDateTime nextDateTime = currentDateTime.plusDays(daysToAdd);
-        return LocalDateTime.of(nextDateTime.toLocalDate(), slotTime);
+        ZonedDateTime deliveryTime = ZonedDateTime.of(
+                now.toLocalDate().plusDays(daysToAdd),slotTime,userZone);
+        return deliveryTime.toInstant();
+
     }
 
-    public LocalDateTime getNextDeliveryTime(Subscription subscription) {
+    public Instant getNextDeliveryTime(Subscription subscription) {
+        ZoneId userZone=ZoneId.of(subscription.getUser().getTimezone());
         if (subscription.getScheduleType() == ScheduleType.DAILY) {
-            return calculateDailyNextDelivery(subscription.getSlot());
+            return calculateDailyNextDelivery(subscription.getSlot(),userZone);
         } else {
-            return calculateWeeklyNextDelivery(subscription.getSlot(), subscription.getDayOfWeek());
+            return calculateWeeklyNextDelivery(subscription.getSlot(), subscription.getDayOfWeek(),userZone);
         }
     }
 }

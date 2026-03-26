@@ -1,5 +1,6 @@
 package com.example.mealsubscription.Controller;
 
+import com.example.mealsubscription.DTO.SubscriptionDTO;
 import com.example.mealsubscription.DTO.SubscriptionRequest;
 import com.example.mealsubscription.Entity.Subscription;
 import com.example.mealsubscription.Service.SubscriptionService;
@@ -26,7 +27,7 @@ public class SubscriptionController {
     }
 
     @GetMapping
-    public List<Subscription> getAllSubscriptions() {
+    public List<SubscriptionDTO> getAllSubscriptions() {
         return subscriptionService.getAllSubscriptions();
     }
 
