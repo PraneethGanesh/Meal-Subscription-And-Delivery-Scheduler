@@ -2,12 +2,14 @@ package com.example.mealsubscription.Controller;
 
 import com.example.mealsubscription.Entity.User;
 import com.example.mealsubscription.Service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
+@Tag(name = "User API",description = "create, update and delete user")
 public class UserController {
     private final UserService userService;
 

@@ -20,4 +20,6 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
             @Param("slot") String slot,
             @Param("status") String status
     );
+
+    List<Subscription> findByUser_userId(Long userId);
 }
