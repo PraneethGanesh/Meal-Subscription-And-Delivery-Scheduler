@@ -179,4 +179,14 @@ public class SubscriptionService {
 
         return subscriptionRepository.save(subscription);
     }
+
+    public List<SubscriptionDTO> getSubscriptionOfuser(long id){
+        List<Subscription> subscriptions= subscriptionRepository.findByUser_userId(id);
+        List<SubscriptionDTO> subscriptionDTOList=new ArrayList<>();
+        for (Subscription subscription:subscriptions){
+           SubscriptionDTO dto=convertToDTO(subscription);
+           subscriptionDTOList.add(dto);
+        }
+        return subscriptionDTOList;
+    }
 }
